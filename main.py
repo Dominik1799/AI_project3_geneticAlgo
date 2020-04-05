@@ -28,7 +28,7 @@ width,height,stoneNumber,garden = buildMap()
 
 class Individual:
     def __init__(self, genes):
-        self.genes = genes[2:]
+        self.startingPoints = genes[2:]
         # left or right = 0 is left preferred, 1 is right preferred
         self.leftOrRight = genes[0]
         self.verticalOrHorizontal = genes[1]
@@ -36,7 +36,25 @@ class Individual:
         self.numberOfMoves = 1
 
 
+    def getStartingDirection(self,row,col):
+        if row == 0:
+            return 'down'
+        if col == 0:
+            return 'right'
+        if row == height - 1:
+            return 'up'
+        if col == width - 1:
+            return 'left'
+
     def rakeGarden(self):
+        for point in self.startingPoints:
+            if self.isSafe(point[0],point[1]) == 1:
+                result = self.makeLine(point[0],point[1],self.getStartingDirection(point[0],point[1]))
+                if result == 'lineDone':
+                    self.numberOfMoves += 1
+                    continue
+                if result == 'gameOver':
+                    return
 
 
     def makeLine(self,row,col,direction):
@@ -44,6 +62,18 @@ class Individual:
             return 'lineDone'
         if direction == 'gameOver':
             return 'gameOver'
+        self.garden[row][col] = self.numberOfMoves
+        nextDirection = self.getDirection(row,col,direction)
+        if nextDirection == 'up':
+            return self.makeLine(row - 1,col,'up')
+        if nextDirection == 'down':
+            return self.makeLine(row + 1, col, 'down')
+        if nextDirection == 'right':
+            return self.makeLine(row, col + 1, 'right')
+        if nextDirection == 'left':
+            return self.makeLine(row, col - 1, 'left')
+        return self.makeLine(row,col,nextDirection)
+
 
 
     def isSafe(self,row,col):
@@ -170,18 +200,6 @@ class Individual:
                     return 'gameOver'
 
 
-def getConfig():
-    config = configparser.ConfigParser()
-    config.read('config.ini')
-    arrayStones = config['STONES']['coords'].replace('[', '').replace(']', '').split(' ')
-    for i in range(0, len(arrayStones)):
-        arrayStones[i] = arrayStones[i].replace('(', '').replace(')', '').split(',')
-        arrayStones[i][0] = int(arrayStones[i][0])
-        arrayStones[i][1] = int(arrayStones[i][1])
-    rows = config['SIZE']['rows']
-    cols = config['SIZE']['cols']
-    return int(rows), int(cols), arrayStones
-
 
 def buildMap():
     rows, cols, stones = getConfig()
@@ -192,4 +210,4 @@ def buildMap():
 
 
 if __name__ == '__main__':
-
+    individual = Individual((1,1,(1,0),(4,0)))
