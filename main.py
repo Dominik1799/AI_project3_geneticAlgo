@@ -1,5 +1,6 @@
 import configparser
 import random
+import heapq
 
 
 def getConfig():
@@ -215,9 +216,9 @@ class Individual:
                 return 'lineDone'
             if self.leftOrRight == 0:
                 if self.isSafe(row + 1, col) == 1:
-                    return 'left'
+                    return 'down'
                 elif self.isSafe(row - 1, col) == 1:
-                    return 'right'
+                    return 'up'
                 elif self.isSafe(row + 1, col) == 0:
                     return 'lineDone'
                 elif self.isSafe(row - 1, col) == 0:
@@ -226,9 +227,9 @@ class Individual:
                     return 'gameOver'
             if self.leftOrRight == 1:
                 if self.isSafe(row - 1, col) == 1:
-                    return 'right'
+                    return 'up'
                 elif self.isSafe(row + 1, col) == 1:
-                    return 'left'
+                    return 'down'
                 elif self.isSafe(row - 1, col) == 0:
                     return 'lineDone'
                 elif self.isSafe(row + 1, col) == 0:
@@ -236,14 +237,23 @@ class Individual:
                 else:
                     return 'gameOver'
 
+    def __lt__(self, other):
+        return self.fitness > other.fitness
+
 
 def createFirstGeneration():
-    population = []
+    newPopulation = []
     for i in range(0, populationSize):
-        population.append(Individual(getRandomChromosone()))
-    return population
+        newPopulation.append(Individual(getRandomChromosone()))
+    heapq.heapify(newPopulation)
+    return newPopulation
+
+def createPopulation(currentPopulation):
+
 
 
 if __name__ == '__main__':
-    individual = Individual(getRandomChromosone())
-    print()
+    # individual = Individual((0,0,[(4, 0), (6, 0), (9, 6), (1, 0), (0, 7), (9, 8), (0, 5), (9, 1), (0, 0), (9, 0), (4, 0), (0, 0), (9, 9), (7, 0), (0, 10), (4, 0), (3, 0), (5, 0), (4, 11), (1, 0), (9, 9), (0, 4), (9, 9), (1, 11), (1, 0), (3, 0)]))
+    population = createFirstGeneration()
+    for i in range(0,len(population)):
+        print(heapq.heappop(population).fitness)
