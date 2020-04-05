@@ -1,4 +1,5 @@
 import configparser
+import random
 
 
 def getConfig():
@@ -11,33 +12,59 @@ def getConfig():
         arrayStones[i][1] = int(arrayStones[i][1])
     rows = config['SIZE']['rows']
     cols = config['SIZE']['cols']
-    return int(rows), int(cols), arrayStones
+    size = config['POPULATION']['size']
+    mutation = config['POPULATION']['mutationRate']
+    generations = config['POPULATION']['maxGenerations']
+    parents = config['POPULATION']['numberOfParents']
+    selection = config['SELECTION']['type']
+    return int(rows), int(cols), arrayStones, int(size), float(mutation), int(generations), int(parents), int(selection)
 
 
 def buildMap():
-    rows, cols, stones = getConfig()
+    rows, cols, stones, size, mutation, generations, parents, selection = getConfig()
     myMap = [[0 for i in range(cols)] for j in range(rows)]
     for stone in stones:
         myMap[stone[0]][stone[1]] = -1
-    return cols, rows, len(stones), myMap
+    return cols, rows, len(stones), myMap, size, mutation, generations, parents, selection
 
 
 # GLOBALS
-width, height, stoneNumber, garden = buildMap()
-maxGenes = width + height + stoneNumber
+width, height, stoneNumber, garden, populationSize, mutationRate, maxGenerations, parentNum, selectionType = buildMap()
+maxGenes = width + height + stoneNumber - 2
+
+
+def getRandomGene():
+    startSides = ['up', 'down', 'left', 'right']
+    startSide = startSides[random.randrange(0, 4)]
+    if startSide == 'up':
+        return 0, random.randrange(0, width)
+    if startSide == 'down':
+        return height - 1, random.randrange(0, width)
+    if startSide == 'right':
+        return random.randrange(0, height), 0
+    if startSide == 'left':
+        return random.randrange(0, height), width - 1
+
+
+def getRandomChromosone():
+    leftOrRight = random.randrange(0, 2)
+    horizontalOrVertical = random.randrange(0, 2)
+    genes = []
+    for i in range(0, maxGenes):
+        genes.append(getRandomGene())
+    return leftOrRight, horizontalOrVertical, genes
 
 
 class Individual:
     def __init__(self, genes):
-        self.startingPoints = genes[2:]
+        self.startingPoints = genes[2]
         # left or right = 0 is left preferred, 1 is right preferred
         self.leftOrRight = genes[0]
         self.verticalOrHorizontal = genes[1]
-        self.garden = garden
+        self.garden = [row[:] for row in garden]
         self.numberOfMoves = 1
         self.rakeGarden()
         self.fitness = self.getFitness()
-
 
     def getFitness(self):
         fitness = 0
@@ -46,7 +73,6 @@ class Individual:
                 if field > 0:
                     fitness += 1
         return fitness
-
 
     def getStartingDirection(self, row, col):
         if row == 0:
@@ -74,25 +100,15 @@ class Individual:
         if direction == 'gameOver':
             return 'gameOver'
         self.garden[row][col] = self.numberOfMoves
-        nextDirection = self.getDirection(row, col, direction)
+        nextDirection = self.getDirection(row, col, direction) # tu si zacal gay
         if nextDirection == 'up':
             return self.makeLine(row - 1, col, 'up')
         if nextDirection == 'down':
             return self.makeLine(row + 1, col, 'down')
 
-        if nextDirection == 'right' and direction == 'up':
+        if nextDirection == 'right':
             return self.makeLine(row, col + 1, 'right')
-        if nextDirection == 'left' and direction == 'down':
-            return self.makeLine(row, col + 1, 'left')
-
-        if nextDirection == 'right' and direction == 'down':
-            return self.makeLine(row, col - 1, 'right')
-        if nextDirection == 'left' and direction == 'up':
-            return self.makeLine(row, col - 1, 'left')
-
-        if nextDirection == 'right' and direction == 'right':
-            return self.makeLine(row, col + 1, 'right')
-        if nextDirection == 'left' and direction == 'left':
+        if nextDirection == 'left':
             return self.makeLine(row, col - 1, 'left')
 
         return self.makeLine(row, col, nextDirection)
@@ -118,8 +134,7 @@ class Individual:
                     return 'left'
                 elif self.isSafe(row, col + 1) == 1:
                     return 'right'
-                if self.isSafe(row,
-                               col - 1) == 0:  # ak je na kraji a ma sa otocit mimo mapy, najprv skusi smer ktory mu nie je prvorady
+                if self.isSafe(row, col - 1) == 0:
                     return 'lineDone'
                 elif self.isSafe(row, col + 1) == 0:
                     return 'lineDone'
@@ -130,8 +145,7 @@ class Individual:
                     return 'right'
                 elif self.isSafe(row, col - 1) == 1:
                     return 'left'
-                if self.isSafe(row,
-                               col + 1) == 0:  # ak je na kraji a ma sa otocit mimo mapy, najprv skusi smer ktory mu nie je prvorady
+                if self.isSafe(row, col + 1) == 0:
                     return 'lineDone'
                 elif self.isSafe(row, col - 1) == 0:
                     return 'lineDone'
@@ -144,24 +158,24 @@ class Individual:
             if self.isSafe(row + 1, col) == 0:
                 return 'lineDone'
             if self.leftOrRight == 0:
-                if self.isSafe(row, col + 1) == 1:
+                if self.isSafe(row, col - 1) == 1:
                     return 'left'
-                elif self.isSafe(row, col - 1) == 1:
+                elif self.isSafe(row, col + 1) == 1:
                     return 'right'
-                if self.isSafe(row, col + 1) == 0:
+                if self.isSafe(row, col - 1) == 0:
                     return 'lineDone'
-                elif self.isSafe(row, col - 1) == 0:
+                elif self.isSafe(row, col + 1) == 0:
                     return 'lineDone'
                 else:
                     return 'gameOver'
             if self.leftOrRight == 1:
-                if self.isSafe(row, col - 1) == 1:
+                if self.isSafe(row, col + 1) == 1:
                     return 'right'
-                elif self.isSafe(row, col + 1) == 1:
+                elif self.isSafe(row, col - 1) == 1:
                     return 'left'
-                if self.isSafe(row, col - 1) == 0:
+                if self.isSafe(row, col + 1) == 0:
                     return 'lineDone'
-                elif self.isSafe(row, col + 1) == 0:
+                elif self.isSafe(row, col - 1) == 0:
                     return 'lineDone'
                 else:
                     return 'gameOver'
@@ -223,13 +237,13 @@ class Individual:
                     return 'gameOver'
 
 
-def buildMap():
-    rows, cols, stones = getConfig()
-    myMap = [[0 for i in range(cols)] for j in range(rows)]
-    for stone in stones:
-        myMap[stone[0]][stone[1]] = -1
-    return myMap
+def createFirstGeneration():
+    population = []
+    for i in range(0, populationSize):
+        population.append(Individual(getRandomChromosone()))
+    return population
 
 
 if __name__ == '__main__':
-    individual = Individual((1, 1, (1, 0), (0, 0), (0, 5), (4, 3), (0,0), (0,4)))
+    individual = Individual(getRandomChromosone())
+    print()
