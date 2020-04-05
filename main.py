@@ -34,28 +34,6 @@ width, height, stoneNumber, garden, populationSize, mutationRate, maxGenerations
 maxGenes = width + height + stoneNumber - 2
 
 
-def getRandomGene():
-    startSides = ['up', 'down', 'left', 'right']
-    startSide = startSides[random.randrange(0, 4)]
-    if startSide == 'up':
-        return 0, random.randrange(0, width)
-    if startSide == 'down':
-        return height - 1, random.randrange(0, width)
-    if startSide == 'right':
-        return random.randrange(0, height), 0
-    if startSide == 'left':
-        return random.randrange(0, height), width - 1
-
-
-def getRandomChromosone():
-    leftOrRight = random.randrange(0, 2)
-    horizontalOrVertical = random.randrange(0, 2)
-    genes = []
-    for i in range(0, maxGenes):
-        genes.append(getRandomGene())
-    return leftOrRight, horizontalOrVertical, genes
-
-
 class Individual:
     def __init__(self, genes):
         self.startingPoints = genes[2]
@@ -241,6 +219,28 @@ class Individual:
         return self.fitness > other.fitness
 
 
+def getRandomGene():
+    startSides = ['up', 'down', 'left', 'right']
+    startSide = startSides[random.randrange(0, 4)]
+    if startSide == 'up':
+        return 0, random.randrange(0, width)
+    if startSide == 'down':
+        return height - 1, random.randrange(0, width)
+    if startSide == 'right':
+        return random.randrange(0, height), 0
+    if startSide == 'left':
+        return random.randrange(0, height), width - 1
+
+
+def getRandomChromosone():
+    leftOrRight = random.randrange(0, 2)
+    horizontalOrVertical = random.randrange(0, 2)
+    genes = []
+    for i in range(0, maxGenes):
+        genes.append(getRandomGene())
+    return leftOrRight, horizontalOrVertical, genes
+
+
 def createFirstGeneration():
     newPopulation = []
     for i in range(0, populationSize):
@@ -254,14 +254,42 @@ def rouletteWheelSelection(currentPopulation):
     parents = []
     for indiviual in currentPopulation:
         sumOfFitnesses += indiviual.fitness
-    for i in range(0,parentNum):
-        marble = random.randrange(0,sumOfFitnesses)
+    for i in range(0, parentNum):
+        marble = random.randrange(0, sumOfFitnesses)
         for indiviual in currentPopulation:
             if marblePostition >= marble:
                 parents.append(indiviual)
                 break
             marblePostition += indiviual.fitness
     return parents
+
+
+def elitismSelection(currentPopulation):
+    heapq.heapify(currentPopulation)
+    parents = []
+    for i in range(0, parentNum):
+        parents.append(heapq.heappop(currentPopulation))
+
+    return parents
+
+
+def crossOver(mama, papa):
+    childStartingPoints = []
+    if mama >= papa:
+        leftOrRight = mama.leftOrRight
+        verticalOrHorizontal = mama.verticalOrHorizontal
+    else:
+        leftOrRight = papa.leftOrRight
+        verticalOrHorizontal = papa.verticalOrHorizontal
+    for i in range(0, maxGenes):
+        whoPassesGene = random.choices(population=['mama', 'papa'], weights=[mama.fitness, papa.fitness])[0]
+        if whoPassesGene == 'mama':
+            childStartingPoints.append(mama.startingPoints[i])
+        else:
+            childStartingPoints.append(papa.startingPoints[i])
+
+def makeChildren(parents):
+    chanceForMutation = random.choices(population=[True, False], weights=[mutationRate, 1 - mutationRate])[0]
 
 
 def createPopulation(currentPopulation):
@@ -273,3 +301,5 @@ def createPopulation(currentPopulation):
 if __name__ == '__main__':
     # individual = Individual((0,0,[(4, 0), (6, 0), (9, 6), (1, 0), (0, 7), (9, 8), (0, 5), (9, 1), (0, 0), (9, 0), (4, 0), (0, 0), (9, 9), (7, 0), (0, 10), (4, 0), (3, 0), (5, 0), (4, 11), (1, 0), (9, 9), (0, 4), (9, 9), (1, 11), (1, 0), (3, 0)]))
     population = createFirstGeneration()
+    for i in range(0, 10):
+        makeChildren([])
