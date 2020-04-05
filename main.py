@@ -101,7 +101,7 @@ class Individual:
         if direction == 'gameOver':
             return 'gameOver'
         self.garden[row][col] = self.numberOfMoves
-        nextDirection = self.getDirection(row, col, direction) # tu si zacal gay
+        nextDirection = self.getDirection(row, col, direction)  # tu si zacal gay
         if nextDirection == 'up':
             return self.makeLine(row - 1, col, 'up')
         if nextDirection == 'down':
@@ -245,15 +245,31 @@ def createFirstGeneration():
     newPopulation = []
     for i in range(0, populationSize):
         newPopulation.append(Individual(getRandomChromosone()))
-    heapq.heapify(newPopulation)
     return newPopulation
 
-def createPopulation(currentPopulation):
 
+def rouletteWheelSelection(currentPopulation):
+    sumOfFitnesses = 0
+    marblePostition = 0
+    parents = []
+    for indiviual in currentPopulation:
+        sumOfFitnesses += indiviual.fitness
+    for i in range(0,parentNum):
+        marble = random.randrange(0,sumOfFitnesses)
+        for indiviual in currentPopulation:
+            if marblePostition >= marble:
+                parents.append(indiviual)
+                break
+            marblePostition += indiviual.fitness
+    return parents
+
+
+def createPopulation(currentPopulation):
+    # Roulette Wheel Selection
+    if selectionType == 0:
+        parents = rouletteWheelSelection(currentPopulation)
 
 
 if __name__ == '__main__':
     # individual = Individual((0,0,[(4, 0), (6, 0), (9, 6), (1, 0), (0, 7), (9, 8), (0, 5), (9, 1), (0, 0), (9, 0), (4, 0), (0, 0), (9, 9), (7, 0), (0, 10), (4, 0), (3, 0), (5, 0), (4, 11), (1, 0), (9, 9), (0, 4), (9, 9), (1, 11), (1, 0), (3, 0)]))
     population = createFirstGeneration()
-    for i in range(0,len(population)):
-        print(heapq.heappop(population).fitness)
