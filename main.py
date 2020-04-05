@@ -40,12 +40,14 @@ class Individual:
 
 
     def makeLine(self,row,col,direction):
-        self.garden[row][col] = self.numberOfMoves
-        if direction == 'up':
-            if isSafe
+        if direction == 'lineDone':
+            return 'lineDone'
+        if direction == 'gameOver':
+            return 'gameOver'
+
 
     def isSafe(self,row,col):
-        if not (row < height and col < width):
+        if (not (row < height and col < width)) or (row < 0 or col < 0):
             # out of garden, finished a line
             return 0
         if  self.garden == 0:
@@ -65,6 +67,21 @@ class Individual:
                     return 'left'
                 elif self.isSafe(row,col + 1) == 1:
                     return 'right'
+                if self.isSafe(row,col - 1) == 0: # ak je na kraji a ma sa otocit mimo mapy, najprv skusi smer ktory mu nie je prvorady
+                    return 'lineDone'
+                elif self.isSafe(row,col + 1) == 0:
+                    return 'lineDone'
+                else:
+                    return 'gameOver'
+            if self.leftOrRight == 1:
+                if self.isSafe(row,col + 1) == 1:
+                    return 'right'
+                elif self.isSafe(row,col - 1) == 1:
+                    return 'left'
+                if self.isSafe(row,col + 1) == 0: # ak je na kraji a ma sa otocit mimo mapy, najprv skusi smer ktory mu nie je prvorady
+                    return 'lineDone'
+                elif self.isSafe(row,col - 1) == 0:
+                    return 'lineDone'
                 else:
                     return 'gameOver'
 
@@ -78,6 +95,21 @@ class Individual:
                     return 'left'
                 elif self.isSafe(row,col - 1) == 1:
                     return 'right'
+                if self.isSafe(row,col + 1) == 0:
+                    return 'lineDone'
+                elif self.isSafe(row,col - 1) == 0:
+                    return 'lineDone'
+                else:
+                    return 'gameOver'
+            if self.leftOrRight == 1:
+                if self.isSafe(row,col - 1) == 1:
+                    return 'right'
+                elif self.isSafe(row,col + 1) == 1:
+                    return 'left'
+                if self.isSafe(row,col - 1) == 0:
+                    return 'lineDone'
+                elif self.isSafe(row,col + 1) == 0:
+                    return 'lineDone'
                 else:
                     return 'gameOver'
 
@@ -87,23 +119,53 @@ class Individual:
             if self.isSafe(row,col + 1) == 0:
                 return 'lineDone'
             if self.leftOrRight == 0:
-                if self.isSafe(row - 1,col) == 1:
+                if self.isSafe(row - 1, col) == 1:
                     return 'up'
-                elif self.isSafe(row + 1,col) == 1:
+                elif self.isSafe(row + 1, col) == 1:
                     return 'down'
+                elif self.isSafe(row - 1, col) == 0:
+                    return 'lineDone'
+                elif self.isSafe(row + 1, col) == 0:
+                    return 'lineDone'
+                else:
+                    return 'gameOver'
+            if self.leftOrRight == 1:
+                if self.isSafe(row + 1, col) == 1:
+                    return 'down'
+                elif self.isSafe(row - 1, col) == 1:
+                    return 'up'
+                elif self.isSafe(row + 1, col) == 0:
+                    return 'lineDone'
+                elif self.isSafe(row - 1, col) == 0:
+                    return 'lineDone'
                 else:
                     return 'gameOver'
 
         if prevDirection == 'left':
-            if self.isSafe(row - 1,col) == 1:
-                return 'up'
-            if self.isSafe(row - 1,col) == 0:
+            if self.isSafe(row,col - 1) == 1:
+                return 'left'
+            if self.isSafe(row,col - 1) == 0:
                 return 'lineDone'
             if self.leftOrRight == 0:
-                if self.isSafe(row,col - 1) == 1:
+                if self.isSafe(row + 1,col) == 1:
                     return 'left'
-                elif self.isSafe(row,col + 1) == 1:
+                elif self.isSafe(row - 1,col) == 1:
                     return 'right'
+                elif self.isSafe(row + 1,col) == 0:
+                    return 'lineDone'
+                elif self.isSafe(row - 1,col) == 0:
+                    return 'lineDone'
+                else:
+                    return 'gameOver'
+            if self.leftOrRight == 1:
+                if self.isSafe(row - 1,col) == 1:
+                    return 'right'
+                elif self.isSafe(row + 1,col) == 1:
+                    return 'left'
+                elif self.isSafe(row - 1,col) == 0:
+                    return 'lineDone'
+                elif self.isSafe(row + 1,col) == 0:
+                    return 'lineDone'
                 else:
                     return 'gameOver'
 
