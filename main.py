@@ -275,7 +275,7 @@ def elitismSelection(currentPopulation):
 
 def crossOver(mama, papa):
     childStartingPoints = []
-    if mama >= papa:
+    if mama.fitness >= papa.fitness:
         leftOrRight = mama.leftOrRight
         verticalOrHorizontal = mama.verticalOrHorizontal
     else:
@@ -287,9 +287,16 @@ def crossOver(mama, papa):
             childStartingPoints.append(mama.startingPoints[i])
         else:
             childStartingPoints.append(papa.startingPoints[i])
+        willGeneMutate = random.choices(population=[True, False], weights=[mutationRate, 1 - mutationRate])[0]
+        if willGeneMutate:
+            childStartingPoints[i] = getRandomGene()
+
+
+    return leftOrRight,verticalOrHorizontal,childStartingPoints
+
 
 def makeChildren(parents):
-    chanceForMutation = random.choices(population=[True, False], weights=[mutationRate, 1 - mutationRate])[0]
+    
 
 
 def createPopulation(currentPopulation):
