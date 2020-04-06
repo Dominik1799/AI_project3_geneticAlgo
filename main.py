@@ -274,6 +274,24 @@ def rouletteWheelSelection(currentPopulation):
     return parents
 
 
+def tournamentSelection(currentPopulation):
+    parents = []
+    for i in range(0,parentNum):
+        tournament = []
+        while True:
+            contestant = currentPopulation[random.randrange(0, populationSize)]
+            if contestant in tournament or contestant in parents:
+                continue
+            tournament.append(contestant)
+            if len(tournament) == 5:
+                heapq.heapify(tournament)
+                winner = heapq.heappop(tournament)
+                parents.append(winner)
+                break
+
+    return parents
+
+
 def elitismSelection(currentPopulation):
     heapq.heapify(currentPopulation)
     parents = []
@@ -316,13 +334,18 @@ def makeChildren(parents):
 def createPopulation(currentPopulation):
     # Roulette Wheel Selection
     newPopulation = []
+    parents = []
     if selectionType == 0:
         parents = rouletteWheelSelection(currentPopulation)
-        children = makeChildren(parents)
-        for i in range(0, populationSize - len(children)):
-            newPopulation.append(Individual(getRandomChromosone()))
-        newPopulation += children
-        return newPopulation
+
+    if selectionType == 1:
+        parents = tournamentSelection(currentPopulation)
+
+    children = makeChildren(parents)
+    for i in range(0, populationSize - len(children)):
+        newPopulation.append(Individual(getRandomChromosone()))
+    newPopulation += children
+    return newPopulation
 
 
 def printGarden(best_monk):
