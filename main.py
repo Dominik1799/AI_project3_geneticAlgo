@@ -32,6 +32,9 @@ def buildMap():
 # GLOBALS
 width, height, stoneNumber, garden, populationSize, mutationRate, maxGenerations, parentNum, selectionType = buildMap()
 maxGenes = width + height + stoneNumber - 2
+winningFitness = (width * height) - stoneNumber
+FINISHED_SUCCESSFULLY_FLAG = False
+best_individual = []
 
 
 class Individual:
@@ -44,6 +47,11 @@ class Individual:
         self.numberOfMoves = 1
         self.rakeGarden()
         self.fitness = self.getFitness()
+        if self.fitness == winningFitness:
+            global FINISHED_SUCCESSFULLY_FLAG
+            global best_individual
+            FINISHED_SUCCESSFULLY_FLAG = True
+            best_individual.append(self)
 
     def getFitness(self):
         fitness = 0
@@ -258,6 +266,8 @@ def rouletteWheelSelection(currentPopulation):
         marble = random.randrange(0, sumOfFitnesses)
         for indiviual in currentPopulation:
             if marblePostition >= marble:
+                if indiviual in parents:
+                    continue
                 parents.append(indiviual)
                 break
             marblePostition += indiviual.fitness
@@ -300,8 +310,7 @@ def makeChildren(parents):
         while True:
             children.append(Individual(crossOver(parents.pop(), parents.pop())))
     except IndexError:
-        print()
-    return children
+        return children
 
 
 def createPopulation(currentPopulation):
@@ -316,8 +325,22 @@ def createPopulation(currentPopulation):
         return newPopulation
 
 
+def printGarden(best_monk):
+    for row in best_monk.garden:
+        for point in row:
+            if point == -1:
+                print(" K ", end ="")
+            else:
+                print(" " + str(point) + " ", end ="")
+        print()
+
+
 if __name__ == '__main__':
-    # individual = Individual((0,0,[(4, 0), (6, 0), (9, 6), (1, 0), (0, 7), (9, 8), (0, 5), (9, 1), (0, 0), (9, 0), (4, 0), (0, 0), (9, 9), (7, 0), (0, 10), (4, 0), (3, 0), (5, 0), (4, 11), (1, 0), (9, 9), (0, 4), (9, 9), (1, 11), (1, 0), (3, 0)]))
     population = createFirstGeneration()
-    for i in range(0, 10):
-        makeChildren([])
+    for temp in range(0, maxGenerations):
+        if FINISHED_SUCCESSFULLY_FLAG:
+            print("NEJAKY MNICH TO DAL KOKOOOT")
+            printGarden(best_individual[0])
+            break
+        else:
+            population = createPopulation(population)
