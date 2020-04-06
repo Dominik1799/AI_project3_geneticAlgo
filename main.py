@@ -291,18 +291,29 @@ def crossOver(mama, papa):
         if willGeneMutate:
             childStartingPoints[i] = getRandomGene()
 
-
-    return leftOrRight,verticalOrHorizontal,childStartingPoints
+    return leftOrRight, verticalOrHorizontal, childStartingPoints
 
 
 def makeChildren(parents):
-    
+    children = []
+    try:
+        while True:
+            children.append(Individual(crossOver(parents.pop(), parents.pop())))
+    except IndexError:
+        print()
+    return children
 
 
 def createPopulation(currentPopulation):
     # Roulette Wheel Selection
+    newPopulation = []
     if selectionType == 0:
         parents = rouletteWheelSelection(currentPopulation)
+        children = makeChildren(parents)
+        for i in range(0, populationSize - len(children)):
+            newPopulation.append(Individual(getRandomChromosone()))
+        newPopulation += children
+        return newPopulation
 
 
 if __name__ == '__main__':
