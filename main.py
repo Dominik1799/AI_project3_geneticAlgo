@@ -329,17 +329,23 @@ def printGarden(best_monk):
     for row in best_monk.garden:
         for point in row:
             if point == -1:
-                print(" K ", end ="")
+                print("| " + "K" + " |", end="")
             else:
-                print(" " + str(point) + " ", end ="")
+                if point > 9:
+                    print("| " + str(point) + "|", end="")
+                else:
+                    print("| " + str(point) + " |", end="")
         print()
+    print("--best monk stats--\n")
+    print("* Genes: ", best_monk.startingPoints)
+    print("* Left/Right (0/1): ", best_monk.leftOrRight)
 
 
 if __name__ == '__main__':
     population = createFirstGeneration()
     for temp in range(0, maxGenerations):
         if FINISHED_SUCCESSFULLY_FLAG:
-            print("NEJAKY MNICH TO DAL KOKOOOT")
+            print("Solution found in " + str(temp) + " generation\n")
             printGarden(best_individual[0])
             break
         else:
