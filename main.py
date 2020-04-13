@@ -45,9 +45,10 @@ class Individual:
         self.verticalOrHorizontal = genes[1]
         self.garden = [row[:] for row in garden]
         self.numberOfMoves = 1
-        self.rakeGarden()
+        self.result = self.rakeGarden()
         self.fitness = self.getFitness()
-        if self.fitness == winningFitness:
+        # delete second part of condition if monk can end inside of his garden
+        if self.fitness == winningFitness and self.result == 'lineDone':
             global FINISHED_SUCCESSFULLY_FLAG
             global best_individual
             FINISHED_SUCCESSFULLY_FLAG = True
@@ -72,6 +73,7 @@ class Individual:
             return 'left'
 
     def rakeGarden(self):
+        result = ""
         for point in self.startingPoints:
             if self.isSafe(point[0], point[1]) == 1:
                 result = self.makeLine(point[0], point[1], self.getStartingDirection(point[0], point[1]))
@@ -80,6 +82,7 @@ class Individual:
                     continue
                 if result == 'gameOver':
                     return
+        return result
 
     def makeLine(self, row, col, direction):
         if direction == 'lineDone':
